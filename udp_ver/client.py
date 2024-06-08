@@ -1,12 +1,13 @@
 import socket
 import threading
 
-
 class ChatClient:
     def __init__(self, nickname, host='127.0.0.1', port=5000):
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect((host, port))
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.server_address = (host, port)
         self.nickname = nickname
+
+        self.client.sendto(f'{nickname} has connected!'.encode('utf-8'), self.server_address)
 
         receive_thread = threading.Thread(target=self.receive)
         receive_thread.start()
@@ -17,20 +18,15 @@ class ChatClient:
     def receive(self):
         while True:
             try:
-                message = self.client.recv(1024).decode('utf-8')
-                if message == 'NICK':
-                    self.client.send(self.nickname.encode('utf-8'))
-                else:
-                    print(message)
+                message, _ = self.client.recvfrom(1024)
+                print(message.decode('utf-8'))
             except:
-                print('An error occurred!')
-                self.client.close()
-                break
+                continue
 
     def send(self):
         while True:
             message = f'{self.nickname}: {input("")}'
-            self.client.send(message.encode('utf-8'))
+            self.client.sendto(message.encode('utf-8'), self.server_address)
 
 if __name__ == "__main__":
     nickname = input("Choose your nickname: ")

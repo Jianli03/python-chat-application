@@ -3,7 +3,7 @@ import threading
 
 
 class ChatServer:
-    def __init__(self, host='127.0.0.1', port=5000):
+    def __init__(self, host='127.0.0.1', port=5050):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.bind((host, port))
         self.server.listen()
@@ -30,7 +30,7 @@ class ChatServer:
 
     def receive(self):
         while True:
-            client, address = self.server.accept()
+            client, address = self.server.accept() # main server loop accepting connections
             print(f'Connected with {str(address)}')
 
             client.send('NICK'.encode('utf-8'))
@@ -42,6 +42,7 @@ class ChatServer:
             self.broadcast(f'{nickname} joined the chat!'.encode('utf-8'))
             client.send('Connected to the server!'.encode('utf-8'))
 
+            # for each client connect, a new threat is created and start to handle the client's communication
             thread = threading.Thread(target=self.handle_client, args=(client,))
             thread.start()
 
